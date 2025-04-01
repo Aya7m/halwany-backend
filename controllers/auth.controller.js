@@ -127,7 +127,7 @@ export const registerUserAndSendOTP = async (req, res) => {
             text: `رمز التحقق الخاص بك هو: ${otp}`,
         });
 
-        return res.status(201).json({ message: "تم تسجيل المستخدم وإرسال OTP", email, otp });
+        return res.status(201).json({ message: "تم تسجيل المستخدم وإرسال OTP", user,otp });
 
     } catch (error) {
         console.error("❌ خطأ عام:", error);
