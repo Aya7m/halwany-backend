@@ -22,7 +22,7 @@ const port = process.env.PORT || 5000
 app.use(express.json({ limit: "50mb" }))
 
 app.use(cors({
-    origin: "*", // السماح بأي دومين أثناء الاختبار
+    origin: ['http://localhost:3000', 'https://halwany-backend.vercel.app'],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
