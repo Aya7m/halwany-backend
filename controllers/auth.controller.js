@@ -214,7 +214,7 @@ export const verifyOTP = async (req, res) => {
 
         // ✅ توليد التوكن
         const token = generateToken(user);
-        return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", token , user});
+        return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", user,token });
 
     } catch (error) {
         console.error("❌ خطأ عام:", error);
