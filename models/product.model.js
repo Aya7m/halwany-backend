@@ -57,16 +57,19 @@ const productSchema = mongoose.Schema({
     isFeatured: {
         type: Boolean,
         required: false,
+        default: true, // ✅ القيمة الافتراضية هي false
       
     },
     isRecommended: {
         type: Boolean,
         required: false,
+        default: false, // ✅ القيمة الافتراضية هي false
       
     },
     isBestSelling: {
         type: Boolean,
         required: false,
+        default: false, // ✅ القيمة الافتراضية هي false
       
     },
 
