@@ -3,13 +3,15 @@ import { Product } from "../models/product.model.js";
 
 export const createProduct = async (req, res) => {
 	try {
-		const { name, description, price, image } = req.body
+		const { name, description, price, image, category } = req.body;
 		let cloudinaryResponse = null;
 
 		if (image) {
+			// رفع الصورة في Cloudinary
 			cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
 		}
 
+		// إنشاء المنتج في MongoDB
 		const product = await Product.create({
 			name,
 			description,
@@ -18,13 +20,15 @@ export const createProduct = async (req, res) => {
 			category,
 		});
 
+		// إرسال الاستجابة بسرعة
 		res.status(201).json(product);
 
 	} catch (error) {
 		console.log("Error in createProduct controller", error);
-		
+		res.status(500).json({ message: "Internal Server Error" });
 	}
 }
+
 
 export const getAllProducts = async (req, res) => {
 	try {
