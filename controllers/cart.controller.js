@@ -1,51 +1,92 @@
 import { Product } from "../models/product.model.js";
 
 
-export const addToCart = async (req, res) => {
-	try {
-        const { productId } = req.body; 
-        const user = req.user; 
+// export const addToCart = async (req, res) => {
+// 	try {
+//         const { productId } = req.body; 
+//         const user = req.user; 
 
-        // ✅ تحقق من وجود `productId`
-        if (!productId) {
-            return res.status(400).json({ error: "Product ID is required" });
-        }
+//         // ✅ تحقق من وجود `productId`
+//         if (!productId) {
+//             return res.status(400).json({ error: "Product ID is required" });
+//         }
 
-        // ✅ جلب المنتج من قاعدة البيانات
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ error: "Product not found" });
-        }
+//         // ✅ جلب المنتج من قاعدة البيانات
+//         const product = await Product.findById(productId);
+//         if (!product) {
+//             return res.status(404).json({ error: "Product not found" });
+//         }
 
-        // ✅ تأكد أن `cartItems` موجودة وأنها مصفوفة
-        if (!user.cartItems || !Array.isArray(user.cartItems)) {
-            user.cartItems = [];
-        }
+//         // ✅ تأكد أن `cartItems` موجودة وأنها مصفوفة
+//         if (!user.cartItems || !Array.isArray(user.cartItems)) {
+//             user.cartItems = [];
+//         }
 
-        console.log("User cart items before adding:", user.cartItems);
+//         console.log("User cart items before adding:", user.cartItems);
 
-        // ✅ تصفية `null` أو `undefined` من `cartItems` لتجنب الأخطاء
-        user.cartItems = user.cartItems.filter(item => item && item.product);
+//         // ✅ تصفية `null` أو `undefined` من `cartItems` لتجنب الأخطاء
+//         user.cartItems = user.cartItems.filter(item => item && item.product);
 
-        // ✅ البحث عن المنتج في `cartItems` مع التأكد من أنه ليس `null`
-        const existingItem = user.cartItems.find((item) => item.product.toString() === productId);
+//         // ✅ البحث عن المنتج في `cartItems` مع التأكد من أنه ليس `null`
+//         const existingItem = user.cartItems.find((item) => item.product.toString() === productId);
         
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            user.cartItems.push({ product: product._id, quantity: 1 }); // ✅ إضافة المنتج ككائن وليس فقط ID
-        }
+//         if (existingItem) {
+//             existingItem.quantity += 1;
+//         } else {
+//             user.cartItems.push({ product: product._id, quantity: 1 }); // ✅ إضافة المنتج ككائن وليس فقط ID
+//         }
 
-        await user.save();
-        res.json(user.cartItems);
-    } catch (error) {
-        console.error("❌ Error in addToCart controller:", error.message);
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
+//         await user.save();
+//         res.json(user.cartItems);
+//     } catch (error) {
+//         console.error("❌ Error in addToCart controller:", error.message);
+//         res.status(500).json({ message: "Server error", error: error.message });
+//     }
+// };
 
 
 // remove from cart
+
+
+
+export const addToCart = async (req, res) => {
+	try {
+		const { productId } = req.params; // ← هنا التعديل
+		const user = req.user;
+
+		if (!productId) {
+			return res.status(400).json({ error: "Product ID is required" });
+		}
+
+		const product = await Product.findById(productId);
+		if (!product) {
+			return res.status(404).json({ error: "Product not found" });
+		}
+
+		if (!user.cartItems || !Array.isArray(user.cartItems)) {
+			user.cartItems = [];
+		}
+
+		user.cartItems = user.cartItems.filter(item => item && item.product);
+
+		const existingItem = user.cartItems.find(
+			(item) => item.product.toString() === productId
+		);
+
+		if (existingItem) {
+			existingItem.quantity += 1;
+		} else {
+			user.cartItems.push({ product: product._id, quantity: 1 });
+		}
+
+		await user.save();
+		res.json(user.cartItems);
+	} catch (error) {
+		console.error("❌ Error in addToCart controller:", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
 
 export const removeAllFromCart = async (req, res) => {
 	try {
