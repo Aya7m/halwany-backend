@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
- "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start"
-},
-
+  "scripts": {
+    "start": "nodemon index.js",
+    "dev": "node index.js",
+    "build": "echo 'No build step required'",
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
