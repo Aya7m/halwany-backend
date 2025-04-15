@@ -165,3 +165,19 @@ export const getCartProducts = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }
+
+
+// clean cart
+export const cleanCart = async (req, res) => {
+	try {
+		const user = req.user;
+
+		user.cartItems = [];
+		await user.save();
+
+		res.json({ message: "Cart cleaned", cartItems: user.cartItems });
+	} catch (error) {
+		console.error("Error in cleanCart controller:", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+}
