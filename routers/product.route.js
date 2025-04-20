@@ -5,6 +5,7 @@ import { adminProtect, protect } from "../middleware/protectetRoute.js";
 const productRoute=Router()
 
 productRoute.get('/all',protect,adminProtect,getAllProducts)
+productRoute.get('/get',getAllProducts)
 productRoute.get('/featured',getFeaturedProducts)
 productRoute.get('/recommended',getRecommendedProducts)
 productRoute.get('/best-selling',getBestSellingProducts)
