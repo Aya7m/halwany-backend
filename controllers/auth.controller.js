@@ -127,7 +127,7 @@ export const registerUserAndSendOTP = async (req, res) => {
             text: `رمز التحقق الخاص بك هو: ${otp}`,
         });
 
-        return res.status(201).json({ message: "تم تسجيل المستخدم وإرسال OTP", user,otp });
+        return res.status(201).json({ message: "تم تسجيل المستخدم وإرسال OTP", user, otp });
 
     } catch (error) {
         console.error("❌ خطأ عام:", error);
@@ -214,7 +214,7 @@ export const verifyOTP = async (req, res) => {
 
         // ✅ توليد التوكن
         const token = generateToken(user);
-        return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", user,token });
+        return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", user, token });
 
     } catch (error) {
         console.error("❌ خطأ عام:", error);
@@ -231,3 +231,38 @@ export const getProfile = async (req, res) => {
         res.status(500).json({ message: "حدث خطاء ما", error });
     }
 };
+
+// send email
+
+export const sendEmail = async (req, res) => {
+    const { name, email, phone, comment } = req.body;
+    if (!name || !email || !comment) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+     // send email or store in DB
+  try {
+    // مثال على إرسال إيميل
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: email,
+      to: process.env.EMAIL_USER,
+      subject: `New Contact from ${name}`,
+      text: `Phone: ${phone}\n\n${comment}`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({ message: 'Message sent successfully' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return res.status(500).json({ message: 'Failed to send email' });
+  }
+}
