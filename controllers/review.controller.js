@@ -37,3 +37,16 @@ export const addReview = async (req, res) => {
         res.status(500).json({ message: "حدث خطأ ما", error });
     }
 };
+
+// get all reviews
+export const getAllReviews = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).json({ message: "المنتج غير موجود" });
+        res.status(200).json(product.reviews);
+    } catch (error) {
+        console.error("❌ خطاء في الحصول على جميع المراجعات:", error);
+        res.status(500).json({ message: "حدث خطاء ما", error });
+    }
+};
