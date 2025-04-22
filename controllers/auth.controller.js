@@ -84,143 +84,90 @@ import { generateToken } from "../middleware/generateToken.js";
 
 export const registerUserAndSendOTP = async (req, res) => {
     try {
-        const { email } = req.body;
-
-        // 🔹 إزالة أي مسافات غير ضرورية من الإيميل
-        const trimmedEmail = email.trim();
-
-        // ✅ التحقق مما إذا كان المستخدم مسجلًا بالفعل
-        let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ message: "المستخدم مسجل بالفعل" });
-
-        // ✅ إنشاء مستخدم جديد
+      const { email } = req.body;
+  
+      const trimmedEmail = email.trim();
+  
+      // 🔍 البحث عن المستخدم
+      let user = await User.findOne({ email });
+  
+      // ✅ إنشاء أو تحديث المستخدم
+      if (!user) {
         user = new User({ ...req.body });
-        await user.save();
-
-        // ✅ إنشاء OTP عشوائي وصلاحيته
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // انتهاء الصلاحية بعد 10 دقائق
-
-        // ✅ تحديث المستخدم بإضافة OTP
-        user.otp = otp;
-        user.otpExpires = otpExpires;
-        await user.save();
-
-        console.log(`✅ OTP (${otp}) saved successfully for ${email}`);
-
-        // ✅ إرسال OTP عبر البريد الإلكتروني
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-            tls: {
-                rejectUnauthorized: false,
-            }
-        });
-
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "رمز التحقق (OTP)",
-            text: `رمز التحقق الخاص بك هو: ${otp}`,
-        });
-
-        return res.status(201).json({ message: "تم تسجيل المستخدم وإرسال OTP", user, otp });
-
+      }
+  
+      // ✅ إنشاء OTP وصلاحية
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+  
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+      await user.save();
+  
+      console.log(`✅ OTP (${otp}) saved successfully for ${email}`);
+  
+      // ✅ إرسال OTP عبر البريد
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+  
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "رمز التحقق (OTP)",
+        text: `رمز التحقق الخاص بك هو: ${otp}`,
+      });
+  
+      return res.status(200).json({
+        message: user.isNew ? "تم تسجيل المستخدم وإرسال OTP" : "المستخدم مسجل بالفعل وتم إرسال OTP",
+        user,
+        otp,
+      });
+  
     } catch (error) {
-        console.error("❌ خطأ عام:", error);
-        return res.status(500).json({ message: "حدث خطأ ما", error });
+      console.error("❌ خطأ عام:", error);
+      return res.status(500).json({ message: "حدث خطأ ما", error });
     }
-};
-
-// export const verifyOTP = async (req, res) => {
-//     try {
-//         const { email, otp } = req.body;
-
-//         // ✅ جلب المستخدم مع كود OTP المخزن
-//         const user = await User.findOne({ email }).select("+otp +otpExpires");
-
-//         console.log("📌 User from DB (Before Validation):", user);
-
-//         if (!user) {
-//             return res.status(404).json({ message: "المستخدم غير موجود" });
-//         }
-
-//         if (!user.otp) {
-//             return res.status(400).json({ message: "لم يتم العثور على OTP، يرجى طلب كود جديد." });
-//         }
-
-//         console.log("🔹 Received OTP:", otp);
-//         console.log("🔹 Stored OTP:", user.otp);
-//         console.log("⌛ Expiry:", user.otpExpires);
-
-//         // 🔴 التحقق من تطابق الأكواد
-//         if (user.otp.toString().trim() !== otp.toString().trim()) {
-//             console.log("❌ عدم تطابق الأكواد!");
-//             return res.status(400).json({ message: "كود التحقق غير صحيح" });
-//         }
-
-//         // ✅ التحقق من انتهاء صلاحية OTP
-//         if (!user.otpExpires || new Date(user.otpExpires) < new Date()) {
-//             return res.status(400).json({ message: "كود التحقق منتهي الصلاحية" });
-//         }
-
-//         // ✅ مسح OTP بعد نجاح التحقق
-//         await User.updateOne(
-//             { email },
-//             { $unset: { otp: "", otpExpires: "" } }
-//         );
-
-//         // ✅ توليد التوكن
-//         const token = generateToken(user);
-//         return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", token });
-
-//     } catch (error) {
-//         console.error("❌ خطأ عام:", error);
-//         return res.status(500).json({ message: "حدث خطأ ما", error });
-//     }
-// };
+  };
+  
 
 
-export const verifyOTP = async (req, res) => {
+  export const verifyOTP = async (req, res) => {
     try {
-        const { otp } = req.body;
-
-        // ✅ البحث عن المستخدم بواسطة OTP فقط
-        const user = await User.findOne({ otp }).select("+otp +otpExpires");
-
-        console.log("📌 User from DB (Before Validation):", user);
-
-        if (!user) {
-            return res.status(404).json({ message: "OTP غير صحيح أو المستخدم غير موجود" });
-        }
-
-        console.log("🔹 Received OTP:", otp);
-        console.log("🔹 Stored OTP:", user.otp);
-        console.log("⌛ Expiry:", user.otpExpires);
-
-        // ✅ التحقق من انتهاء صلاحية OTP
-        if (!user.otpExpires || new Date(user.otpExpires) < new Date()) {
-            return res.status(400).json({ message: "كود التحقق منتهي الصلاحية" });
-        }
-
-        // ✅ مسح OTP بعد نجاح التحقق
-        await User.updateOne(
-            { _id: user._id }, // البحث باستخدام `_id` وليس `email`
-            { $unset: { otp: "", otpExpires: "" } }
-        );
-
-        // ✅ توليد التوكن
-        const token = generateToken(user);
-        return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", user, token });
-
+      const { otp } = req.body;
+  
+      const user = await User.findOne({ otp }).select("+otp +otpExpires");
+  
+      if (!user) {
+        return res.status(404).json({ message: "OTP غير صحيح أو المستخدم غير موجود" });
+      }
+  
+      if (!user.otpExpires || new Date(user.otpExpires) < new Date()) {
+        return res.status(400).json({ message: "كود التحقق منتهي الصلاحية" });
+      }
+  
+      // ✅ مسح OTP بعد التحقق
+      await User.updateOne(
+        { _id: user._id },
+        { $unset: { otp: "", otpExpires: "" } }
+      );
+  
+      const token = generateToken(user);
+      return res.status(200).json({ message: "تم تسجيل الدخول بنجاح", user, token });
+  
     } catch (error) {
-        console.error("❌ خطأ عام:", error);
-        return res.status(500).json({ message: "حدث خطأ ما", error });
+      console.error("❌ خطأ عام:", error);
+      return res.status(500).json({ message: "حدث خطأ ما", error });
     }
-};
+  };
+  
 
 
 export const getProfile = async (req, res) => {
