@@ -5,7 +5,7 @@ import { protect } from "../middleware/protectetRoute.js";
 const reviewRouter=Router()
 
 reviewRouter.post('/create/:productId',protect,addReview)
-reviewRouter.get('/get/:productId',protect,addReview)
+reviewRouter.get('/get/:productId',addReview)
 
 
 export default reviewRouter
