@@ -13,7 +13,7 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("📜 Decoded token:", decoded);
 
-    const user = await User.findById(decoded.id).select("email cartItems");
+    const user = await User.findById(decoded.id).select("email cartItems role");
 
     console.log("👤 User found:", user);
 
@@ -36,6 +36,6 @@ export const adminProtect = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();
   } else {
-    res.status(401).json({ message: "غير مصرح بالوصول، لا يوجد توكن" });
+    res.status(403).json({ message: "Access denied - Admins only" });
   }
 };
