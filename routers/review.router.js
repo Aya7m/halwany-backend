@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { addReview } from "../controllers/review.controller.js";
+import { addReview, getAllReviews } from "../controllers/review.controller.js";
 import { protect } from "../middleware/protectetRoute.js";
 
 const reviewRouter=Router()
 
 reviewRouter.post('/create/:productId',protect,addReview)
-reviewRouter.get('/get/:productId',addReview)
+// get all reviews
+reviewRouter.get('/get/:productId',getAllReviews)
 
 
 export default reviewRouter
