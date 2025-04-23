@@ -13,7 +13,7 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("📜 Decoded token:", decoded);
 
-    const user = await User.findById(decoded.id).select("name cartItems");
+    const user = await User.findById(decoded.id).select("email cartItems");
 
     console.log("👤 User found:", user);
 

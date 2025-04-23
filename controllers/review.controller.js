@@ -11,15 +11,14 @@ export const addReview = async (req, res) => {
         const product = await Product.findById(productId);
         if (!product) return res.status(404).json({ message: "المنتج غير موجود" });
 
-        const alreadyReviewed = product.reviews.find((r) => r.user.toString() === userId.toString());
+        const alreadyReviewed = product.reviews.find(
+            (r) => r.user.toString() === userId.toString()
+        );
         if (alreadyReviewed) return res.status(400).json({ message: "لقد قمت بمراجعة هذا المنتج من قبل" });
-
-        // ✅ هنا نجيب اسم المستخدم من قاعدة البيانات
-        const user = await User.findById(userId).select("name");
 
         const review = {
             user: userId,
-            name: user.name, // ✅ ده هو المفتاح لحل المشكلة
+            name: req.user.email || "unknown@email.com", // 👈 الاسم = الإيميل
             rating: Number(rating),
             comment,
         };
